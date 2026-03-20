@@ -5,6 +5,9 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import dotenv from "dotenv";
+import clientRouter from "./routers/client.router";
+import path from "path";
+import vehicleRouter from "./routers/vehicle.router";
 
 dotenv.config();
 
@@ -14,6 +17,26 @@ app.use(cors());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/api/vehicles", vehicleRouter);
+
+app.use("/api/clients", clientRouter);
+
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    console.error(err.stack);
+    res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+    });
+  },
+);
 
 AppDataSource.initialize()
   .then(() => {
