@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Reservation } from "./reservation.entity";
 
 export enum VehicleStatus {
   AVAILABLE = "available",
@@ -63,4 +65,6 @@ export class Vehicle {
 
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
+  @OneToMany(() => Reservation, (reservation) => reservation.vehicle)
+  reservations: Reservation[];
 }

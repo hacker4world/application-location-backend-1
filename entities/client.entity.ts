@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Reservation } from "./reservation.entity";
 
 @Entity("clients")
 export class Client {
@@ -31,4 +33,6 @@ export class Client {
 
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
+  @OneToMany(() => Reservation, (reservation) => reservation.client)
+  reservations: Reservation[];
 }
