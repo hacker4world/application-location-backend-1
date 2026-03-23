@@ -21,6 +21,8 @@ These are the folder names that contain important files in the application, (no 
 - /repositories : contains typeorm repository declarations (just one file that contains repos for all entities)
 - /dto : contains typescript interface declarations to use in services to determine body fields
 - /validators : contains JOI validators used in routers to validate the request body
+- /__tests__ : contains unit tests
+- jest.config.js : contains the setup for unit testing
 - data-source.ts : contains the typeorm database config and initialization
 - index.ts : the main entry point of the app
 

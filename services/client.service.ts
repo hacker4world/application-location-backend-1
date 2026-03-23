@@ -1,3 +1,5 @@
+// services/client.service.ts
+
 import { Request, Response, NextFunction } from "express";
 import { Repository } from "typeorm";
 import { Client } from "../entities/client.entity";
@@ -8,6 +10,24 @@ import {
   updateClientSchema,
   listClientsSchema,
 } from "../validators/client.validator";
+
+/**
+ * Validates that a string is a valid positive integer.
+ * Returns true only for strings that represent positive integers (1, 2, 3, ...).
+ * Returns false for:
+ * - Floats ("1.5", "2.0")
+ * - Negative numbers ("-5")
+ * - Zero ("0")
+ * - Non-numeric strings ("abc", "1a", "<script>")
+ */
+function isValidIdString(idParam: string | undefined): boolean {
+  if (!idParam) return false;
+  // Only allow strings that match positive integers (1 or more digits)
+  const isValidFormat = /^\d+$/.test(idParam);
+  if (!isValidFormat) return false;
+  const parsed = parseInt(idParam, 10);
+  return !isNaN(parsed) && parsed > 0;
+}
 
 export class ClientService {
   private clientRepository: Repository<Client>;
@@ -115,16 +135,19 @@ export class ClientService {
   ): Promise<void> {
     try {
       const idParam = req.params.id as string;
+
       if (!idParam) {
         res.status(400).json(createResponse(400, "Client ID is required"));
         return;
       }
 
-      const id = parseInt(idParam, 10);
-      if (isNaN(id)) {
-        res.status(400).json(createResponse(400, "Invalid client ID"));
+      if (!isValidIdString(idParam)) {
+        // Return 404 for invalid IDs (negative, zero, non-numeric)
+        res.status(404).json(createResponse(404, "Client not found"));
         return;
       }
+
+      const id = parseInt(idParam, 10);
 
       const client = await this.clientRepository.findOne({ where: { id } });
       if (!client) {
@@ -185,8 +208,8 @@ export class ClientService {
       }
 
       const client = this.clientRepository.create({
-        firstName: value.first_name,
-        lastName: value.last_name,
+        firstName: value.first_name.trim(),
+        lastName: value.last_name.trim(),
         phoneNumber: value.phone_number,
         identityNumber: value.identity_number,
         totalRentals: 0,
@@ -209,16 +232,19 @@ export class ClientService {
   ): Promise<void> {
     try {
       const idParam = req.params.id as string;
+
       if (!idParam) {
         res.status(400).json(createResponse(400, "Client ID is required"));
         return;
       }
 
-      const id = parseInt(idParam, 10);
-      if (isNaN(id)) {
-        res.status(400).json(createResponse(400, "Invalid client ID"));
+      if (!isValidIdString(idParam)) {
+        // Return 404 for invalid IDs (negative, zero, non-numeric)
+        res.status(404).json(createResponse(404, "Client not found"));
         return;
       }
+
+      const id = parseInt(idParam, 10);
 
       // Validate request body
       const { error, value } = updateClientSchema.validate(req.body, {
@@ -270,11 +296,15 @@ export class ClientService {
         }
       }
 
-      // Update fields
-      if (value.first_name) client.firstName = value.first_name;
-      if (value.last_name) client.lastName = value.last_name;
-      if (value.phone_number) client.phoneNumber = value.phone_number;
-      if (value.identity_number) client.identityNumber = value.identity_number;
+      // Update fields - also trim names if provided
+      if (value.first_name !== undefined)
+        client.firstName = value.first_name.trim();
+      if (value.last_name !== undefined)
+        client.lastName = value.last_name.trim();
+      if (value.phone_number !== undefined)
+        client.phoneNumber = value.phone_number;
+      if (value.identity_number !== undefined)
+        client.identityNumber = value.identity_number;
       if (value.total_rentals !== undefined)
         client.totalRentals = value.total_rentals;
 
@@ -297,16 +327,19 @@ export class ClientService {
   ): Promise<void> {
     try {
       const idParam = req.params.id as string;
+
       if (!idParam) {
         res.status(400).json(createResponse(400, "Client ID is required"));
         return;
       }
 
-      const id = parseInt(idParam, 10);
-      if (isNaN(id)) {
-        res.status(400).json(createResponse(400, "Invalid client ID"));
+      if (!isValidIdString(idParam)) {
+        // Return 404 for invalid IDs (negative, zero, non-numeric)
+        res.status(404).json(createResponse(404, "Client not found"));
         return;
       }
+
+      const id = parseInt(idParam, 10);
 
       const client = await this.clientRepository.findOne({ where: { id } });
       if (!client) {
